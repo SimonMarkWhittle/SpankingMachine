@@ -2,6 +2,7 @@
 import os, asyncio, random
 
 from time import sleep
+from difflib import get_close_matches
 
 import discord
 from discord.ext import commands
@@ -102,6 +103,32 @@ async def spank(ctx, target: discord.Member):
                 f"{target.name} is safe for now"
             )
 
+# @spankbot.command(name='sponk', help='sponk a user')
+# async def sponk(ctx, target: discord.Member):
+#     pass
+
+# @spankbot.command(name='spænk', help='spank a user but in Old English')
+# async def ash_spank(ctx, target: discord.Member):
+#     pass
+
+# @spankbot.command(name='sp∞nk', help='infinispank a user')
+# async def infinispank(ctx, target: discord.Member):
+#     pass
+
+@spankbot.event
+async def on_command_error(ctx, error):
+    
+    commands = {c.name : c.help for c in spankbot.commands}
+    matches = get_close_matches(ctx.invoked_with, commands.keys(), n=3, cutoff=0.8)
+    matches_with_helps = {m : commands[m] for m in matches}
+
+    options = ""
+    for name, desc in matches_with_helps.items():
+        options += f"\n\t{name}" + f"\t({desc})" if desc != "" else ""
+
+    if len(matches) > 0:
+        await ctx.send(f"Did you mean... {options}")
+
 @spankbot.event
 async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as f:
@@ -109,6 +136,5 @@ async def on_error(event, *args, **kwargs):
             f.write(f'Unhandled message: {args[0]}\n')
         else:
             raise
-
 
 spankbot.run(TOKEN)
